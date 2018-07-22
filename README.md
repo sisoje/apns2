@@ -13,155 +13,60 @@ Node client for connecting to Apple's Push Notification Service using the new HT
 
 ## Create Client
 
-Create an APNS client using a signing key:
+Create an APNS client using a signing key and environment flag:
 
 ```javascript
 const { APNS } = require('apns2')
 
-let client = new APNS({
-  team: `TFLP87PW54`,
-  keyId: `123ABC456`,
-  signingKey: fs.readFileSync(`${__dirname}/path/to/auth.p8`),
-  defaultTopic: `com.tablelist.Tablelist`
+let client = new APNS ({
+    team: teamId,
+    keyId: keyId,
+    key: keyText,
+    production: true
 })
 ```
 
 ## Sending Notifications
 
-#### Basic
-
 Send a basic notification with message:
 
 ```javascript
-const { BasicNotification } = require('apns2')
-
-let bn = new BasicNotification(deviceToken, 'Hello, World')
-
-try {
-  await client.send(bn)
-} catch(err) {
-  console.error(err.reason)
+let headers = {
+    'apns-priority': 10,
+    'apns-topic': topic
 }
-```
 
-Send a basic notification with message and options:
+let payload = {
+        aps: {
+            alert: 'Testing node',
+            badge: 1,
+            sound: 'default'
+        }
+}
 
-```javascript
-const { BasicNotification } = require('apns2')
+// array of tokens
+let tokens = [goodDeviceToken, invalidToken]
 
-let bn = new BasicNotification(deviceToken, 'Hello, World', {
-  badge: 4,
-  data: {
-    userId: user.getUserId
-  }
+//client sends the same payload with same headers to multiple tokens
+//authorisation is the only thing done internally
+client.connect().then(() => {
+    client.push({
+        deviceTokens: tokens,
+        payload: payload,
+        headers: headers
+    }).then(results => console.log('done', results)).catch(err => console.log('can not push', err))
+}).catch(err => {
+    console.log('can not connect', err)
 })
 
-try {
-  await client.send(bn)
-} catch(err) {
-  console.error(err.reason)
-}
-```
-
-#### Silent
-
-Send a silent notification using `content-available` key:
-
-```javascript
-const { SilentNotification } = require('apns2')
-
-let sn = new SilentNotification(deviceToken)
-
-try {
-  await client.send(sn)
-} catch(err) {
-  console.error(err.reason)
-}
-```
-
-Note: [Apple recommends](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CreatingtheNotificationPayload.html#//apple_ref/doc/uid/TP40008194-CH10-SW8) that no options other than the `content-available` flag be sent in order for a notification to truly be silent and wake up your app in the background. Therefore this class does not accept any additional options in the constructor.
-
-#### Many
-
-Send multiple notifications concurrently:
-
-```javascript
-const { BasicNotification } = require('apns2')
-
-let notifications = [
-  new BasicNotification(deviceToken1, 'Hello, World'),
-  new BasicNotification(deviceToken2, 'Hello, World')
-]
-
-try {
-  await client.sendMany(notifications)
-} catch(err) {
-  console.error(err.reason)
-}
-```
-
-#### Advanced
-
-For complete control over the push notification packet use the base `Notification` class:
-
-```javascript
-const { Notification } = require('apns2')
-
-let notification = new Notification(deviceToken, {
-  aps: { ... }
-})
-
-try {
-  await client.send(notification)
-} catch(err) {
-  console.error(err.reason)
-}
 ```
 
 Available options can be found at [APNS Payload Options](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/PayloadKeyReference.html#//apple_ref/doc/uid/TP40008194-CH17-SW1)
 
 ## Error Handling
 
-All errors are defined in `./lib/errors.js` and come directly from [APNS Table 8-6](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html#//apple_ref/doc/uid/TP40008194-CH11-SW17)
+Just iterate trough results (token is added to the actual server result)
 
-You can easily listen for these errors by attaching an error handler to the APNS client:
-
-```javascript
-const { Errors } = require('apns2')
-
-// Listen for a specific error
-client.on(Errors.badDeviceToken, err => {
-  // Handle accordingly...
-  // Perhaps delete token from your database
-  console.error(err.reason, err.statusCode, err.notification.deviceToken)
-})
-
-// Listen for any error
-client.on(Errors.error, err => {
-  console.error(err.reason, err.statusCode, err.notification.deviceToken)
-})
-```
-
-## Environments
-
-By default the APNS client connects to the production push notification server. This is identical to passing in the options:
-
-```javascript
-let client = new APNS({
-  host: 'api.push.apple.com',
-  port: 443,
-  ...
-})
-```
-
-To connect to the development push notification server, pass the options:
-
-```javascript
-let client = new APNS({
-  host: 'api.development.push.apple.com'
-  ...
-})
-```
 
 ## Requirements
 

@@ -11,7 +11,8 @@ let topic = 'com.redhotbits.goldprice-lite'
 let client = new APNS ({
     team: teamId,
     keyId: keyId,
-    key: keyText
+    key: keyText,
+    production: true
 })
 
 let headers = {
@@ -30,7 +31,7 @@ let payload = {
 let tokens = [deviceToken, '1']
 
 client.connect().then(() => {
-    client.send({
+    client.push({
         deviceTokens: tokens,
         payload: payload,
         headers: headers
