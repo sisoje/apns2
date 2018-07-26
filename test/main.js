@@ -27,11 +27,9 @@ let payload = {
         }
 }
 
-let tokens = [deviceToken, '1']
-
 client.connect().then(() => {
     client.push({
-        deviceTokens: tokens,
+        deviceTokens: [deviceToken],
         payload: payload,
         headers: headers
     }).then(results => console.log('done', results)).catch(err => console.log('can not push', err))
