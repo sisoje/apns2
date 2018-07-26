@@ -23,7 +23,7 @@ let payload = {
         aps: {
             alert: 'Testing node',
             badge: 1,
-            sound: 'default'
+            'mutable-content': 1
         }
 }
 
