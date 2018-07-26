@@ -1,18 +1,17 @@
 const { APNS } = require('../lib/apns')
+const fs = require('fs')
 
-const keyText = '-----BEGIN PRIVATE KEY-----\nBLA.BLA.BLA\n-----END PRIVATE KEY-----'
-const keyId = 'BLA'
+const keyText = fs.readFileSync(`/Users/lotasevic/AuthKey_3B3YUNMR33.p8`, 'utf8')
+const keyId = '3B3YUNMR33'
 const teamId = 'Q28A9MLQ38'
-
-
-let deviceToken = '722cd307306e368e30d1823fa0d55d0c0bc0ed8c90eaf480633b2a62816352bb'
-let topic = 'com.redhotbits.goldprice-lite'
+const deviceToken = 'ad0c511d15b4cd48ef9b7f5b610de8c1d38612fdc6677bda752e108555607f4a'
+const topic = 'com.redhotbits.goldprice'
 
 let client = new APNS ({
     team: teamId,
     keyId: keyId,
     key: keyText,
-    production: true
+    production: false
 })
 
 let headers = {
